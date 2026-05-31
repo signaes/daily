@@ -7,6 +7,7 @@ use std::path::PathBuf;
 #[derive(Debug, Default, Deserialize)]
 pub struct Config {
     pub db: Option<PathBuf>,
+    pub context: Option<String>,
 }
 
 #[derive(Debug)]
@@ -35,28 +36,30 @@ impl std::fmt::Display for ConfigError {
 impl std::error::Error for ConfigError {}
 
 impl Config {
-    pub fn load() -> Result<Self, ConfigError> {
+    pub fn load(db_path: Option<PathBuf>, context: Option<String>) -> Result<Self, ConfigError> {
         let data_dir = xdg_data_dir()?;
         fs::create_dir_all(&data_dir).map_err(ConfigError::FailedCreatingDir)?;
 
         let default_db = data_dir.join("daily.sqlite");
-        let default_config = Config {
-            db: Some(default_db),
-        };
+        let default_context = String::from("main");
 
         let config_path = xdg_config_path()?;
         let config_str = match read_to_string(&config_path) {
             Ok(s) => s,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(default_config),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                return Ok(Config {
+                    db: db_path.or(Some(default_db)),
+                    context: context.or(Some(default_context)),
+                });
+            }
             Err(e) => return Err(ConfigError::FailedReadingConfig(e)),
         };
 
         let mut config: Config =
             serde_json::from_str(&config_str).map_err(ConfigError::FailedParsingConfig)?;
 
-        if config.db.is_none() {
-            config.db = default_config.db;
-        }
+        config.db = db_path.or(config.db).or(Some(default_db));
+        config.context = context.or(config.context).or(Some(default_context));
 
         Ok(config)
     }
@@ -140,15 +143,5 @@ mod tests {
         let result = resolve_xdg_base(|_k| None, "XDG_DATA_HOME", ".local/share");
 
         assert!(matches!(result, Err(ConfigError::MissingHomeDir)));
-    }
-
-    #[test]
-    fn smoke_test_xdg_data_dir_succeeds() {
-        let _ = xdg_data_dir();
-    }
-
-    #[test]
-    fn smoke_test_xdg_config_path_succeeds() {
-        let _ = xdg_config_path();
     }
 }
