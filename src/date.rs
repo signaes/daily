@@ -16,6 +16,12 @@ impl Date {
     }
 }
 
+impl Default for Date {
+    fn default() -> Self {
+        Date::today()
+    }
+}
+
 impl FromStr for Date {
     type Err = String;
 
@@ -66,5 +72,13 @@ mod tests {
 
         assert_eq!(a, b);
         assert_ne!(a, c);
+    }
+
+    #[test]
+    fn default_is_today() {
+        let today = Date::today();
+        let default = Date::default();
+
+        assert_eq!(default, today);
     }
 }

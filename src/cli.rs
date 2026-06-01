@@ -6,18 +6,18 @@ use crate::date::Date;
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Add {
-        #[arg(long, value_parser = Date::parse)]
-        date: Option<Date>,
+        #[arg(long, value_parser = Date::parse, default_value_t)]
+        date: Date,
         content: String,
     },
     Remove {
-        #[arg(long, value_parser = Date::parse)]
-        date: Option<Date>,
+        #[arg(long, value_parser = Date::parse, default_value_t)]
+        date: Date,
         id: u32,
     },
     Edit {
-        #[arg(long, value_parser = Date::parse)]
-        date: Option<Date>,
+        #[arg(long, value_parser = Date::parse, default_value_t)]
+        date: Date,
         id: u32,
         content: String,
     },
