@@ -1,21 +1,23 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
+use crate::date::Date;
+
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Add {
-        #[arg(long)]
-        date: Option<String>,
+        #[arg(long, value_parser = Date::parse)]
+        date: Option<Date>,
         content: String,
     },
     Remove {
-        #[arg(long)]
-        date: Option<String>,
+        #[arg(long, value_parser = Date::parse)]
+        date: Option<Date>,
         id: u32,
     },
     Edit {
-        #[arg(long)]
-        date: Option<String>,
+        #[arg(long, value_parser = Date::parse)]
+        date: Option<Date>,
         id: u32,
         content: String,
     },

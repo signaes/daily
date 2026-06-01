@@ -1,3 +1,5 @@
+mod date;
+
 mod config;
 use config::Config;
 
